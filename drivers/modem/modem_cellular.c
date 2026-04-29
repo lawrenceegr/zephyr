@@ -31,7 +31,7 @@ LOG_MODULE_REGISTER(modem_cellular, CONFIG_MODEM_LOG_LEVEL);
 	K_MSEC(CONFIG_MODEM_CELLULAR_PERIODIC_SCRIPT_MS)
 
 /* Magic constants */
-#define MODEM_CELLULAR_MAX_SCRIPT_FAILURES   (3)
+#define MODEM_CELLULAR_MAX_SCRIPT_FAILURES   CONFIG_MODEM_CELLULAR_MAX_SCRIPT_FAILURES
 #define CSQ_RSSI_UNKNOWN		     (99)
 #define CESQ_RSRP_UNKNOWN		     (255)
 #define CESQ_RSRQ_UNKNOWN		     (255)
@@ -1445,6 +1445,7 @@ static void modem_cellular_dormant_event_handler(struct modem_cellular_data *dat
 	case MODEM_CELLULAR_EVENT_RING:
 		LOG_DBG("RING received!");
 		modem_pipe_open_async(data->uart_pipe);
+		break;
 	case MODEM_CELLULAR_EVENT_PPP_DEAD:
 		modem_cellular_enter_state(data, MODEM_CELLULAR_STATE_RUN_DIAL_SCRIPT);
 		break;
@@ -2588,6 +2589,14 @@ MODEM_CHAT_SCRIPT_CMDS_DEFINE(simcom_a76xx_init_chat_script_cmds,
 			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CGSN", imei_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CGMM", cgmm_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CGMI", cgmi_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CGMR", cgmr_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CIMI", cimi_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CICCID", iccid_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP_NONE("AT+CMUX=0,0,5,127", 300));
 

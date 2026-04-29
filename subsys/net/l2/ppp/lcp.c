@@ -155,10 +155,30 @@ static int lcp_peer_mru_nack(struct ppp_fsm *fsm, struct net_pkt *ret_pkt,
 }
 #endif
 
+static int lcp_magic_number_parse(struct ppp_fsm *fsm, struct net_pkt *pkt,
+				  void *user_data)
+{
+	struct ppp_context *ctx = ppp_fsm_ctx(fsm);
+	uint32_t magic;
+	int ret;
+
+	ret = net_pkt_read_be32(pkt, &magic);
+	if (ret < 0) {
+		return -EMSGSIZE;
+	}
+
+	ctx->lcp.peer_options.magic = magic;
+
+	NET_DBG("[LCP] Received peer Magic-Number %08x", magic);
+	return 0;
+}
+
 static const struct ppp_peer_option_info lcp_peer_options[] = {
 	PPP_PEER_OPTION(LCP_OPTION_AUTH_PROTO, lcp_auth_proto_parse,
 			lcp_auth_proto_nack),
 	PPP_PEER_OPTION(LCP_OPTION_ASYNC_CTRL_CHAR_MAP, lcp_async_ctrl_char_map_parse,
+			NULL),
+	PPP_PEER_OPTION(LCP_OPTION_MAGIC_NUMBER, lcp_magic_number_parse,
 			NULL),
 #if defined(CONFIG_NET_L2_PPP_OPTION_MRU)
 	PPP_PEER_OPTION(LCP_OPTION_MRU, lcp_peer_mru_parse, lcp_peer_mru_nack),
@@ -460,7 +480,8 @@ static void lcp_init(struct ppp_context *ctx)
 	ppp_fsm_name_set(&ctx->lcp.fsm, ppp_proto2str(PPP_LCP));
 
 	ctx->lcp.my_options.mru = net_if_get_mtu(ctx->iface);
-	ctx->lcp.my_options.async_map = 0;
+
+	ctx->lcp.my_options.async_map = 0xffffffff;
 
 	ctx->lcp.fsm.my_options.info = lcp_my_options;
 	ctx->lcp.fsm.my_options.data = ctx->lcp.my_options_data;

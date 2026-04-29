@@ -47,6 +47,9 @@ target_include_directories(boot_stage2 PUBLIC
 if(CONFIG_PICOLIBC)
   target_compile_options(boot_stage2 PRIVATE "--specs=picolibc.specs")
   target_link_options(boot_stage2 PRIVATE "--specs=picolibc.specs")
+  # picolibc.specs appends --gc-sections which discards all sections in this
+  # assembly-only binary (no KEEP/ENTRY in boot_stage2.ld). Suppress it.
+  target_link_options(boot_stage2 PRIVATE "-Wl,--no-gc-sections")
 else()
   target_link_options(boot_stage2 PRIVATE "--specs=nosys.specs")
 endif()

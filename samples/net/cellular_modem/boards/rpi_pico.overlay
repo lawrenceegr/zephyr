@@ -1,0 +1,63 @@
+/*
+ * Devicetree overlay for Aquagate on Raspberry Pi Pico
+ *
+ * Hardware Configuration:
+ *   - USB CDC ACM console for debugging
+ *   - A7670E modem on UART0 (115200 baud)
+ *   - 3x Actuator control GPIOs
+ *   - Modem power control via mdm-power-gpios (managed by Zephyr)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		zephyr,console = &cdc_acm_uart0;
+		zephyr,modem-uart = &uart0;
+	};
+
+	aliases {
+		modem = &modem;
+	};
+
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+/* UART0 for A7670E modem */
+&uart0 {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-names = "default";
+	/* hw-flow-control; - RTS/CTS not connected */
+
+	modem: modem {
+		compatible = "simcom,a76xx";
+		mdm-power-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+};
+
+/* Flash partitions for NVS storage */
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Reserve 256KB at end of 2MB flash for storage */
+		storage_partition: partition@1c0000 {
+			label = "storage";
+			reg = <0x001c0000 0x00040000>;
+		};
+	};
+};

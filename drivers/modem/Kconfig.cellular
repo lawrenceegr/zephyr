@@ -103,4 +103,13 @@ config MODEM_CELLULAR_CLEAR_FORBIDDEN
 
 endif #DT_HAS_U_BLOX_LARA_R6_ENABLED
 
+config MODEM_CELLULAR_MAX_SCRIPT_FAILURES
+	int "Maximum consecutive periodic script failures before modem restart"
+	default 3
+	help
+	  Maximum number of consecutive periodic script failures before the
+	  modem driver restarts the modem. On slow UART links with CMUX, AT
+	  commands may time out under data load. Increase this value to avoid
+	  unnecessary modem restarts.
+
 endif #MODEM_CELLULAR
